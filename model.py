@@ -8,10 +8,12 @@ from sklearn.feature_selection import RFECV
 from sklearn.model_selection import cross_val_score
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import MinMaxScaler
+import joblib
 
 
 # todo:  output
-# todo: attack mode
+# todo: experiment with different feature extractions, timeframes for audio, etc. Two fold cross val or so
+
 
 #  usage -g/--generate to generate model (use with wav and json)
 #       -a/--attack to try to predict words (use with wav only)
@@ -32,11 +34,16 @@ class Model:
         print(Counter(y))
         self.pipeline.fit(X, y)
         print("Fit completed")
-        self.predict_accuracy(X, y)
 
     def predict_accuracy(self, X, y, folds=5):
         print("Predicting accuracy")
         print("score: ", np.mean(cross_val_score(self.pipeline, X, y, cv=folds)))
 
+    def dump(self, name):
+        joblib.dump(self.pipeline, name + ".model")
+
+    def predict_probability(self, X):
+        return self.pipeline.predict_proba(X)
+
     def predict(self, X):
-        print(self.pipeline.predict(X))
+        return self.pipeline.predict(X)

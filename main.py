@@ -1,9 +1,8 @@
 import argparse
-from io import IOBase
-
 from attacker import Attacker
 from data import Data
 from model import Model
+
 
 if __name__ == "__main__":
     #
@@ -31,8 +30,12 @@ if __name__ == "__main__":
     if args.attack:
         print(args.attack)
         Attacker.attack(X, y, args.attack)
+
     else:
         # ML Model creating and training
         print("RFECV step=", X[0].shape[0] / 10)
         model_creator = Model(rfecv_step=X[0].shape[0] / 10)
         model = model_creator.fit_data(X, y)
+        model_creator.dump(args.wav)
+        print("Dumped")
+        model_creator.predict_accuracy(X, y)

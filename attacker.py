@@ -1,24 +1,18 @@
 import joblib
+from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
 
 
 class Attacker:
 
-    def attack(X, y, modelFileName):
+    # todo: add dictionary
 
-        print("In attacker have X ", X)
-        print("In attacker have y ",y)
+    def attack(X, y, modelFileName):
+        print("In attacker have y ", y)
         print("In attacker have filename ", modelFileName)
 
-        model = joblib.load(modelFileName, 'rb')
-        print("Got model:", model)
+        model = joblib.load(modelFileName, 'r')
+        guesses = model.predict(X)
 
-
-
-        # parse target
-        # show actual words, make sure at least spaces are correct
-
-        # predict
-        # predisc whole words
-
-        # show results
-
+        print(guesses)
+        print("Accuracy: ", accuracy_score(y, guesses))
+        print("f1 score: ", f1_score(y, guesses, average='weighted'))
