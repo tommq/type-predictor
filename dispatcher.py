@@ -2,6 +2,8 @@
 #   no minimal energy check
 import numpy as np
 
+from config import Config
+
 
 def rms(series):
     return np.math.sqrt(sum(series ** 2) / series.size)
@@ -22,18 +24,27 @@ class Dispatcher:
             print("Start time missing in provided json, should contain timestamp:'start'")
             return None, None
         json.pop(start_time)
-        stroke_time = 0.05
+        stroke_time = 0.08
         samplerate = 44100
+
         rem = len(audio_data) % 441
         data = np.array(audio_data[:len(audio_data) - rem]).reshape(-1, 1)  # removing end to make it dividable
         X = []
         Y = []
-        for keypress_time in sorted(json.keys()):
-            relative_time = keypress_time - start_time
-            start_block = int((relative_time.total_seconds() - stroke_time) * samplerate)
-            end_block = int((relative_time.total_seconds() + stroke_time) * samplerate)
-            extracted_keypress = normalize(data[start_block:end_block])
-            X.append(extracted_keypress)
-            Y.append(json[keypress_time])
+        sortedKeys = sorted(json.keys())
+        for idx, keypress_time in enumerate(sortedKeys):
+            if json[keypress_time] in Config.accepted_characters:
+                relative_time = keypress_time - start_time
+                prev_relative = sortedKeys[idx-1] - start_time
+                gap = (relative_time.total_seconds() - stroke_time) - (prev_relative.total_seconds() + stroke_time)
+                if idx > 0 and gap < 0:
+                    print("Too little gap between strokes! " + str(gap))
+                start_block = int((relative_time.total_seconds() - stroke_time) * samplerate)
+                end_block = int((relative_time.total_seconds() + stroke_time) * samplerate)
+                extracted_keypress = normalize(data[start_block:end_block])
+                X.append(extracted_keypress)
+                Y.append(json[keypress_time])
+            else:
+                print("Character " + str(json[keypress_time]) + " is not accepted")
 
         return X, Y

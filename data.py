@@ -25,6 +25,7 @@ class Data:
         files = glob.glob(path + "*.wav")
         for file_path in files:
             self.process_file(file_path)
+            print("Adding" + file_path)
 
     def process_file(self, wav_file_path):
         wav_file, json_file = Importer.load(wav_file_path)

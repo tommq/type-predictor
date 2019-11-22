@@ -17,7 +17,7 @@ if __name__ == "__main__":
     # parser.add_argument("--workers", "-w", type=int, default=1, help='Number of workers to dispatch')
     parser.add_argument('--classifier', '-c', nargs=2, default=['LogisticRegression', 'sklearn.linear_model'],
                         help='Class name and package name of classifier')
-    parser.add_argument('--folds', type=int, default=5, help='How many folds to use for cross-validation')
+    parser.add_argument('--folds', type=int, default=3, help='How many folds to use for cross-validation')
 
     args = parser.parse_args()
     if not args.wav:
@@ -29,7 +29,8 @@ if __name__ == "__main__":
 
     if args.attack:
         print(args.attack)
-        Attacker.attack(X, y, args.attack)
+        attacker = Attacker()
+        attacker.attack(X, y, args.attack)
 
     else:
         # ML Model creating and training
