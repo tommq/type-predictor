@@ -4,8 +4,10 @@ from difflib import get_close_matches
 import numpy as np
 import joblib
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
+from prettytable import PrettyTable
 
-
+# todo: find out why predictions tend to get worse over time (way worse)
+# todo: use texttable https://stackoverflow.com/questions/9535954/printing-lists-as-tabular-data
 class Attacker:
 
     wordlist = list()
@@ -17,15 +19,26 @@ class Attacker:
 
         model = joblib.load(modelFileName, 'r')
         guesses = model.predict(X)
+        probabs = model['rfecv'].predict_proba(X)
+        classes = model['rfecv'].classes_
 
         self.success_per_character(y, guesses)
         print('guessed', "".join(guesses).split(' '))
+
+        top5 = 0.0
+        for i, l in enumerate(y[:30]):
+            class_prob = probabs[i]
+            top_values = [classes[i] for i in class_prob.argsort()[-5:]]
+            if l in top_values:
+                top5 += 1.0
+
+        print("Top-5 accuracy", top5 / 30)
 
         close_words = []
         self.load_words()
         for word in "".join(guesses).split(' '):
             try:
-                match = get_close_matches(word, self.wordlist, n=1)[0]
+                match = get_close_matches(word, self.wordlist, n=1, cutoff=0.45)[0]
                 if len(match) == len(word):
                     close_words.append(match)
                 else:
@@ -45,6 +58,7 @@ class Attacker:
 
     def success_per_character(self, y, guesses):
 
+        t = PrettyTable(['Predicted character', 'Correctly predicted', 'Prediction success percentage'])
         success_table = dict()
         for idx, character in enumerate(y):
             if guesses[idx] == character:
@@ -56,7 +70,9 @@ class Attacker:
         counter = Counter(y)
 
         for character in success_table:
-            print(character + " : " + str(success_table[character]) + "/" + str(counter.get(character)))
+            t.add_row([character, str(success_table[character]) + "/" + str(counter.get(character)),
+                       str(round(success_table[character]/counter.get(character)*100, 2)) + '%'])
+        print(t)
 
     def load_words(self):
         with open('resources/words_alpha.txt') as csvDataFile:
