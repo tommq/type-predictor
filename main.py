@@ -18,6 +18,7 @@ if __name__ == "__main__":
     parser.add_argument('--classifier', '-c', nargs=2, default=['LogisticRegression', 'sklearn.linear_model'],
                         help='Class name and package name of classifier')
     parser.add_argument('--folds', type=int, default=3, help='How many folds to use for cross-validation')
+    parser.add_argument('--nocv', type=int, default=3, help='Disables cross-validation')
 
     args = parser.parse_args()
     if not args.wav:
@@ -39,4 +40,5 @@ if __name__ == "__main__":
         model = model_creator.fit_data(X, y)
         model_creator.dump(args.wav)
         print("Dumped")
-        model_creator.predict_accuracy(X, y)
+        if not args.nocv:
+            model_creator.predict_accuracy(X, y)

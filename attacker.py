@@ -8,6 +8,7 @@ from prettytable import PrettyTable
 
 # todo: find out why predictions tend to get worse over time (way worse)
 # todo: use texttable https://stackoverflow.com/questions/9535954/printing-lists-as-tabular-data
+
 class Attacker:
 
     wordlist = list()
@@ -19,20 +20,20 @@ class Attacker:
 
         model = joblib.load(modelFileName, 'r')
         guesses = model.predict(X)
-        probabs = model['rfecv'].predict_proba(X)
-        classes = model['rfecv'].classes_
+        probabs = model.predict_proba(X)
+        classes = model.classes_
 
         self.success_per_character(y, guesses)
         print('guessed', "".join(guesses).split(' '))
 
         top5 = 0.0
-        for i, l in enumerate(y[:30]):
+        for i, l in enumerate(y[:]):
             class_prob = probabs[i]
             top_values = [classes[i] for i in class_prob.argsort()[-5:]]
             if l in top_values:
                 top5 += 1.0
 
-        print("Top-5 accuracy", top5 / 30)
+        print("Top-5 accuracy", top5 / len(y))
 
         close_words = []
         self.load_words()

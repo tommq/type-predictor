@@ -28,7 +28,7 @@ class Importer:
             with open(json_file_path, 'r') as f:
                 unicode_dict = json.load(f)
                 for key in unicode_dict.keys():
-                    key_presses[utils.dt_from_str(str(key))] = str(unicode_dict[key])
+                    key_presses[float(key)] = unicode_dict[key]
                 return key_presses
         except Exception as e:
             print(key_presses, e)

@@ -24,7 +24,9 @@ class Dispatcher:
             print("Start time missing in provided json, should contain timestamp:'start'")
             return None, None
         json.pop(start_time)
-        stroke_time = 0.08
+        before_length = Config.dispatcher_window_size_before / 1000
+        after_length = Config.dispatcher_window_size_after / 1000
+        # stroke_time = 0.08
         samplerate = 44100
 
         rem = len(audio_data) % 441
@@ -36,11 +38,11 @@ class Dispatcher:
             if json[keypress_time] in Config.accepted_characters:
                 relative_time = keypress_time - start_time
                 prev_relative = sortedKeys[idx-1] - start_time
-                gap = (relative_time.total_seconds() - stroke_time) - (prev_relative.total_seconds() + stroke_time)
+                gap = (relative_time - before_length) - (prev_relative + after_length)
                 if idx > 0 and gap < 0:
                     print("Too little gap between strokes! " + str(gap))
-                start_block = int((relative_time.total_seconds() - stroke_time) * samplerate)
-                end_block = int((relative_time.total_seconds() + stroke_time) * samplerate)
+                start_block = int((relative_time - before_length) * samplerate)
+                end_block = int((relative_time + after_length) * samplerate)
                 extracted_keypress = normalize(data[start_block:end_block])
                 X.append(extracted_keypress)
                 Y.append(json[keypress_time])

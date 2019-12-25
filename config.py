@@ -1,7 +1,8 @@
 class Config:
     dispatcher_threshold = 90
     dispatcher_min_interval = 8000
-    dispatcher_window_size = 100
+    dispatcher_window_size_before = 30
+    dispatcher_window_size_after = 120
     dispatcher_step_size = 1
     dispatcher_persistence = True
     # Number of worker processes

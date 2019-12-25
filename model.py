@@ -6,10 +6,12 @@ import numpy as np
 import sklearn
 from sklearn.feature_selection import RFECV
 from sklearn.model_selection import cross_val_score
+from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.linear_model import SGDClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegressionCV
 import joblib
 
 
@@ -26,11 +28,13 @@ class Model:
     classifier = None
     totalWords = 0
 
-    def __init__(self, rfecv_folds=5, rfecv_step=50):
-        self.classifier = sklearn.linear_model.LogisticRegression(multi_class="auto", solver="liblinear")
+    def __init__(self, solver='liblinear', max_iter=150, fecv_folds=5, rfecv_step=50):
+        self.classifier = LogisticRegressionCV(solver=solver, class_weight='balanced', max_iter=max_iter, n_jobs=6)
+        # self.classifier = MLPClassifier(activation='relu', alpha=1e-5, hidden_layer_sizes=(15,),
+        #                                 random_state=1, max_iter=1200)
         # self.classifier = SGDClassifier(loss="hinge", penalty="l2", max_iter=12)
         # self.classifier = RandomForestClassifier(n_estimators=50, max_depth=5)
-        self.classifier = RFECV(self.classifier, step=rfecv_step, cv=rfecv_folds, verbose=1, n_jobs=1)
+        # self.classifier = RFECV(self.classifier, step=rfecv_step, cv=rfecv_folds, verbose=1, n_jobs=-1)
         print("Selected: ", self.classifier.get_params())
         self.pipeline = make_pipeline(MinMaxScaler(), self.classifier)
 
@@ -42,12 +46,15 @@ class Model:
         self.totalWords = y.__len__()
         print("Fit completed")
 
-    def predict_accuracy(self, X, y):
+    def predict_accuracy(self, X, y, cv=4):
         print("Predicting accuracy")
-        print("score: ", cross_val_score(self.pipeline, X, y, cv=4, n_jobs=4))
+        score = cross_val_score(self.pipeline, X, y, cv=cv, n_jobs=4)
+        print("score: ", score)
+        return score
 
     def dump(self, name):
-        joblib.dump(self.pipeline, name + str(self.totalWords) + "W" + ".model")
+        model = self.pipeline.steps[1][0]
+        joblib.dump(self.pipeline, name + str(self.totalWords) + "w-" + model + ".model")
 
     def predict_probability(self, X):
         return self.pipeline.predict_proba(X)
