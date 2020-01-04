@@ -39,8 +39,7 @@ class Model:
         self.pipeline = make_pipeline(MinMaxScaler(), self.classifier)
 
     def fit_data(self, X, y):
-        print("Going to fit len(X)=", len(X))
-        print("Going to fit len(x)=", len(y))
+        print("Going to fit len(X)=", len(X), "len(y)=", len(y))
         print(Counter(y))
         self.pipeline.fit(X, y)
         self.totalWords = y.__len__()

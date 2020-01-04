@@ -12,7 +12,12 @@ class Data:
     total_y = []
     winlen, winstep, nfilt, nfft = None, None, None, None
 
-    def process(self, path, winlen, winstep, nfilt, nfft):
+    def __init__(self):
+        self.total_X = []
+        self.total_y = []
+        self.winlen, self.winstep, self.nfilt, self.nfft = None, None, None, None
+
+    def process(self, path, winlen=0.01, winstep=0.0025, nfilt=32, nfft=32):
         self.winlen = winlen
         self.winstep = winstep
         self.nfilt = nfilt

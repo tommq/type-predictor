@@ -6,11 +6,8 @@ import joblib
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
 from prettytable import PrettyTable
 
-# todo: find out why predictions tend to get worse over time (way worse)
-# todo: use texttable https://stackoverflow.com/questions/9535954/printing-lists-as-tabular-data
 
 class Attacker:
-
     wordlist = list()
 
     def attack(self, X, y, modelFileName):
@@ -47,13 +44,13 @@ class Attacker:
             except Exception as e:
                 close_words.append(word)
 
-
         print('altered', close_words)
         print('real', "".join(y).split(' '))
         print("Accuracy: ", accuracy_score(y, guesses))
         normalized_guesses = list(" ".join(np.asarray(close_words)))
         print("Normalized guesses", normalized_guesses)
         print("Accuracy with dictionary: ", accuracy_score(y, normalized_guesses))
+        print("Confusion matrix: \n", confusion_matrix(guesses, y))
         # print("f1 score: ", f1_score(y, guesses, average='weighted'))
         self.success_per_character(y, normalized_guesses)
 
@@ -72,7 +69,7 @@ class Attacker:
 
         for character in success_table:
             t.add_row([character, str(success_table[character]) + "/" + str(counter.get(character)),
-                       str(round(success_table[character]/counter.get(character)*100, 2)) + '%'])
+                       str(round(success_table[character] / counter.get(character) * 100, 2)) + '%'])
         print(t)
 
     def load_words(self):

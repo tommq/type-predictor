@@ -9,4 +9,5 @@ class Extractor:
         print("Going to MFFC size=", len(x))
         arr = np.array([sf.mfcc(sample, 44100, winlen, winstep, nfilt, nfft, preemph=0.9, highfreq=20000, ceplifter=22,
                                 appendEnergy=False).flatten() for sample in x])
+        print("Features: " + str(arr.shape))
         return arr

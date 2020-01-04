@@ -1,8 +1,7 @@
 from data import Data
 from model import Model
-import sys
 
-def trainAndValidate(path, solver='liblinear',cv=4, max_iter=500, winlen=0.01, winstep=0.0025, nfilt=32, nfft=32):
+def trainAndValidate(path, solver='lbfgs',cv=4, max_iter=800, winlen=0.01, winstep=0.0025, nfilt=32, nfft=32):
     try:
         data = Data()
         X, y = data.process(path, winlen, winstep, nfilt, nfft)
@@ -14,13 +13,16 @@ def trainAndValidate(path, solver='liblinear',cv=4, max_iter=500, winlen=0.01, w
         accuracy = sum(score)/len(score)
         localVariables = locals()
         print(str(localVariables)[:500], " Avg accuracy: " + str(accuracy))
+        X, y = None, None
     except Exception as e:
         print(e)
 
-path = '/home/tomas/PycharmProjects/grabber/resources/a485-sync/699d3629.wav'
+# path = '/home/tomas/Documents/School/Master-thesis/grabber/resources/a485-sync/'
+path = '/home/tomas/Documents/School/Master-thesis/grabber/resources/a485-sync/compare/'
 
 # for solver in ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga']:
+# for solver in ['sag']:
 #     trainAndValidate(path, solver=solver)
 
-for winlen, winstep, nfilt, nfft in [[0.01, 0.0025, 32, 512]]:
+for winlen, winstep, nfilt, nfft in [[0.01, 0.0025, 32, 512], [0.01, 0.0025, 32, 32], [0.01, 0.0025, 24, 32], [0.01, 0.0025, 24, 512], [0.015, 0.0025, 32, 512], [0.015, 0.004, 32, 512], [0.01, 0.002, 32, 512]]:
     trainAndValidate(path, winlen=winlen, winstep=winstep, nfilt=nfilt, nfft=nfft)
