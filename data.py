@@ -10,16 +10,17 @@ class Data:
 
     total_X = []
     total_y = []
-    winlen, winstep, nfilt, nfft = None, None, None, None
+    winlen, winstep, nfilt, nfft, numcep = None, None, None, None, None
 
     def __init__(self):
         self.total_X = []
         self.total_y = []
         self.winlen, self.winstep, self.nfilt, self.nfft = None, None, None, None
 
-    def process(self, path, winlen=0.01, winstep=0.0025, nfilt=32, nfft=32):
+    def process(self, path, winlen=0.01, winstep=0.0025, numcep=13, nfilt=32, nfft=512):
         self.winlen = winlen
         self.winstep = winstep
+        self.numcep = numcep
         self.nfilt = nfilt
         self.nfft = nfft
         if os.path.isdir(path):
@@ -47,6 +48,6 @@ class Data:
         if not X or not y:
             print("X not present, exiting...")
             return
-        X = Extractor.transform_mfcc(X, self.winlen, self.winstep, self.nfilt, self.nfft)
+        X = Extractor.transform_mfcc(X, self.winlen, self.winstep, self.numcep, self.nfilt, self.nfft)
         self.total_X.extend(X)
         self.total_y.extend(y)

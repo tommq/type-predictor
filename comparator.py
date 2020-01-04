@@ -1,10 +1,10 @@
 from data import Data
 from model import Model
 
-def trainAndValidate(path, solver='lbfgs',cv=4, max_iter=800, winlen=0.01, winstep=0.0025, nfilt=32, nfft=32):
+def trainAndValidate(path, solver='lbfgs',cv=4, max_iter=800, winlen=0.01, winstep=0.0025, numcep=13, nfilt=32, nfft=512):
     try:
         data = Data()
-        X, y = data.process(path, winlen, winstep, nfilt, nfft)
+        X, y = data.process(path, winlen, winstep, numcep, nfilt, nfft)
 
         # ML Model creating and training
         model_creator = Model(solver, max_iter)
