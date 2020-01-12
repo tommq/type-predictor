@@ -25,18 +25,17 @@ import joblib
 
 class Model:
     pipeline = None
-    classifier = None
+    # classifier = None
     totalWords = 0
 
-    def __init__(self, solver='liblinear', max_iter=150, fecv_folds=5, rfecv_step=50):
-        self.classifier = LogisticRegressionCV(solver=solver, class_weight='balanced', max_iter=max_iter, n_jobs=6)
-        # self.classifier = MLPClassifier(activation='relu', alpha=1e-5, hidden_layer_sizes=(15,),
-        #                                 random_state=1, max_iter=1200)
-        # self.classifier = SGDClassifier(loss="hinge", penalty="l2", max_iter=12)
-        # self.classifier = RandomForestClassifier(n_estimators=50, max_depth=5)
-        # self.classifier = RFECV(self.classifier, step=rfecv_step, cv=rfecv_folds, verbose=1, n_jobs=-1)
-        print("Selected: ", self.classifier.get_params())
-        self.pipeline = make_pipeline(MinMaxScaler(), self.classifier)
+    def __init__(self, classifier=None, solver='lbfgs', max_iter=1500):
+
+        # self.pipeline = classifier
+        if not classifier:
+            classifier = LogisticRegressionCV(solver=solver, class_weight='balanced', max_iter=max_iter, n_jobs=6)
+        #
+        print("Selected: ", classifier.get_params())
+        self.pipeline = make_pipeline(MinMaxScaler(), classifier)
 
     def fit_data(self, X, y):
         print("Going to fit len(X)=", len(X), "len(y)=", len(y))

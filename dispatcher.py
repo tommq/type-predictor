@@ -50,3 +50,47 @@ class Dispatcher:
                 print("Character " + str(json[keypress_time]) + " is not accepted")
 
         return X, Y
+
+    def peak_extract(data):
+
+        X = []
+        # for data in audio_data:
+        rem = len(data) % 441
+        data = np.array(data[:len(data) - rem])  # removing end to make it dividable
+        minimum_interval = 8000  # minimum keypress length
+        sample_length = (44100 * 100) / 1000  # size of individual sample = (100ms)
+        before_length = Config.dispatcher_window_size_before / 1000
+        after_length = Config.dispatcher_window_size_after / 1000
+        # dict position:peak sum
+        peaks = dict()
+        for x in range(0, len(data) - 440):  # for every datapoint
+            peaks[x] = np.sum(np.absolute(np.fft.fft(data[x:x + 440])))  # sum of absolute values returned by fft
+            # values of fourier transform result of current 441 data points
+
+        peaks = np.array(list(peaks.values()))
+        tau = np.percentile(peaks, 90)  # 90% of peaks are below this number
+        print("found " + str(sum(i > tau for i in peaks)))
+        events = []
+        past_x = 0
+        for x, i in peaks:
+            if peaks[x] >= tau:  # peak must be higher than tau
+                if x - past_x >= minimum_interval:  # minimal distance between points/strokes
+                    # It is a keypress event (maybe)
+                    keypress = normalize(data[x:x + sample_length])  # extract next 100ms
+                    past_x = x
+                    # Pass it immediately to workers
+                    # Display event point
+                    events.append(keypress)
+
+                    relative_time = keypress_time - start_time
+                    prev_relative = sortedKeys[idx - 1] - start_time
+                    gap = (relative_time - before_length) - (prev_relative + after_length)
+
+
+                    start_block = int((relative_time - before_length) * samplerate)
+                    end_block = int((relative_time + after_length) * samplerate)
+                    extracted_keypress = normalize(data[start_block:end_block])
+                    X.append(extracted_keypress)
+
+
+

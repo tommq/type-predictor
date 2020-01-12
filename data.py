@@ -15,37 +15,43 @@ class Data:
     def __init__(self):
         self.total_X = []
         self.total_y = []
-        self.winlen, self.winstep, self.nfilt, self.nfft = None, None, None, None
+        self.winlen, self.winstep, self.nfilt, self.nfft, self.numcep = None, None, None, None, None
 
-    def process(self, path, winlen=0.01, winstep=0.0025, numcep=13, nfilt=32, nfft=512):
+    def process(self, path, winlen=0.04, winstep=0.005, numcep=32, nfilt=96, nfft=2048, attack=False):
         self.winlen = winlen
         self.winstep = winstep
         self.numcep = numcep
         self.nfilt = nfilt
         self.nfft = nfft
         if os.path.isdir(path):
-            self.process_folder(path)
+            self.process_folder(path, attack=attack)
         elif os.path.isfile(path):
-            self.process_file(path)
+            self.process_file(path, attack=attack)
         else:
             print("Incorrect path" + path)
             exit(1)
         return self.total_X, self.total_y
 
-    def process_folder(self, path):
+    def process_folder(self, path, attack=False):
         files = glob.glob(path + "*.wav")
         for file_path in files:
-            self.process_file(file_path)
+            self.process_file(file_path, attack=attack)
             print("Adding" + file_path)
 
-    def process_file(self, wav_file_path):
+    def process_file(self, wav_file_path, attack=False):
         wav_file, json_file = Importer.load(wav_file_path)
-        if not wav_file or not json_file:
+        if not wav_file:
+            print("Error for path " + wav_file_path)
+            return
+        if not json_file and not attack:
             print("Error for path " + wav_file_path)
             return
 
-        X, y = Dispatcher.timestamped_no_peak_check(wav_file, json_file)
-        if not X or not y:
+        if attack and not json_file:
+            X = Dispatcher.peak_extract(wav_file)
+        else:
+            X, y = Dispatcher.timestamped_no_peak_check(wav_file, json_file)
+        if not X:
             print("X not present, exiting...")
             return
         X = Extractor.transform_mfcc(X, self.winlen, self.winstep, self.numcep, self.nfilt, self.nfft)
