@@ -11,4 +11,3 @@ class Config:
                            's', 't', 'u', 'v', 'w', 'y', 'x', 'z', ' ']
     # Output options
     dict_sep_threshold = 5
-    dict_folder = 'dictionaries'

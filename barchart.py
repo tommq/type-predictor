@@ -1,20 +1,16 @@
-from matplotlib.ticker import FuncFormatter
 import matplotlib.pyplot as plt
-import numpy as np
 
-x = np.arange(5)
-money = [75, 93, 88, 84, 81]
-
-
-def millions(x, pos):
-    'The two args are the value and tick position'
-    return '%1.0f' % (x)
-
-
-formatter = FuncFormatter(millions)
+sizes = [10, 20, 30, 50, 70, 90]
+mlp = [40, 50, 56, 63, 80, 81]
+svm = [61, 61, 66, 72, 75, 78]
+lr = [58, 62, 72, 78, 81, 82]
 
 fig, ax = plt.subplots()
-ax.yaxis.set_major_formatter(formatter)
-plt.bar(x, money)
-plt.xticks(x, ('LR', 'RF', 'SGD', 'MLP', 'SVC'))
+ax.plot(sizes, mlp, label="mlp", marker='o')
+ax.plot(sizes, svm, label="svm", marker='o')
+ax.plot(sizes, lr, label="lr", marker='o')
+plt.xlabel('Number of training samples per class in train dataset')
+plt.ylabel('Average accuracy in 5-fold CV')
+ax.legend()
+
 plt.show()

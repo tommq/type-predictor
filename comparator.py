@@ -1,35 +1,56 @@
-from sklearn.ensemble import ExtraTreesClassifier, RandomForestClassifier
-from sklearn.linear_model import SGDClassifier, LogisticRegressionCV
-from sklearn.neural_network import MLPClassifier, BernoulliRBM
+import sys
+import traceback
+
+from sklearn.linear_model import LogisticRegressionCV
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import cross_val_score
+from sklearn.neural_network import MLPClassifier
 from sklearn.svm import LinearSVC
 
+from attacker import Attacker
 from data import Data
 from model import Model
 
-path = '/home/tomas/Documents/School/Master-thesis/grabber/resources/a485-sync/closet/selected/'
+train_path = '/home/tomas/Documents/School/Master-thesis/grabber/resources/a485-sync/fifth/'
+test_path = '/home/tomas/Documents/School/Master-thesis/grabber/resources/a485-sync/closet/selected/'
+attack_audio_path = '/home/tomas/Documents/School/Master-thesis/grabber/resources/a485-sync/closet/selected/18abea94.wav'
 
 
-
-
-def trainAndValidate(path, classifier=None, solver='lbfgs', cv=4, max_iter=800, winlen=0.04, winstep=0.005, numcep=32,
-                     nfilt=96, nfft=2048, X=None, y=None):
+def trainAndCrossValidate(classifier=None, train_X=None, train_y=None, folds=5):
     try:
-        # data = Data()
-        # X, y = data.process(path, winlen, winstep, numcep, nfilt, nfft)
+        print("Predicting accuracy")
+        score = cross_val_score(classifier, X=train_X, y=train_y, cv=folds, n_jobs=8)
+        print(str(folds) + " fold cross validation score: " + str(score))
 
-        # ML Model creating and training
-        model_creator = Model(classifier=classifier, solver=solver, max_iter=max_iter)
-        model_creator.fit_data(X, y)
-        score = model_creator.predict_accuracy(X, y, cv)
-        accuracy = sum(score) / len(score)
-        localVariables = locals()
-        print(str(localVariables)[:500], " Avg accuracy: " + str(accuracy))
-        X, y = None, None
     except Exception as e:
-        print(e)
+        print("Exception in train and CV: ", e)
 
 
-# path = '/home/tomas/Documents/School/Master-thesis/grabber/resources/a485-sync/'
+def trainAndAttack(classifier=None, train_X=None, train_y=None, test_X=None, test_y=None):
+    try:
+        model_creator = Model(classifier=classifier)
+        model_creator.fit_data(train_X, train_y)
+        predictions = model_creator.predict(test_X)
+        accuracy = accuracy_score(test_y, predictions)
+        print("Accuracy for " + str(classifier) + " : " + str(accuracy))
+    except Exception as e:
+        print("Exception in train and attack: ", e, )
+
+
+def trainAndAttackRaw(classifier=None, train_X=None, train_y=None, audioPath=None):
+    try:
+        print("Imported data " + str(len(train_X)) + " and " + str(len(train_y)))
+        testData = Data()
+        test_X, test_y = testData.process(audioPath, attack=True, peak=True)
+        model_creator = Model(classifier=classifier)
+        print("Imported data " + str(len(train_X)) + " and " + str(len(train_y)))
+        model_creator.fit_data(train_X, train_y)
+        attacker = Attacker()
+        attacker.attack(X=test_X, y=test_y, model=model_creator)
+    except Exception as e:
+        print("Exception in train and attack raw: ", e.__cause__)
+        traceback.print_exc(file=sys.stdout)
+
 
 # for solver in ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga']:
 # for solver in ['sag']:
@@ -41,16 +62,27 @@ def trainAndValidate(path, classifier=None, solver='lbfgs', cv=4, max_iter=800, 
 #                                      [0.02, 0.005, 32, 96, 2048]]:
 #     trainAndValidate(path, winlen=winlen, winstep=winstep, numcep=numcep, nfilt=nfilt, nfft=nfft)
 
-classifiers = []
-# classifiers.append(MLPClassifier(activation='relu', alpha=1e-5, hidden_layer_sizes=(2048,),random_state=1, max_iter=2000)) #Avg accuracy: 0.7945881045466272
-# classifiers.append(BernoulliRBM(n_components=1024, n_iter=2000))
-# classifiers.append(SGDClassifier(class_weight='balanced', loss="hinge", penalty="l2", max_iter=2000))
-classifiers.append(RandomForestClassifier(class_weight='balanced', n_estimators=5000, max_depth=15, n_jobs=6))
-# classifiers.append(ExtraTreesClassifier(class_weight='balanced', n_estimators=5000, max_depth=5,  random_state=0))
-# classifiers.append(LinearSVC(class_weight='balanced', tol=1e-5))
-# classifiers.append(LogisticRegressionCV(solver='lbfgs', class_weight='balanced', max_iter=1200, n_jobs=8))
-data = Data()
-X, y = data.process(path, winlen=0.04, winstep=0.005, numcep=32, nfilt=96, nfft=2048)
 
-for classifier in classifiers:
-    trainAndValidate(path=path, classifier=classifier, X=X, y=y)
+mlp = MLPClassifier(activation='relu', alpha=1e-5, hidden_layer_sizes=(2048,), random_state=1, max_iter=1500)
+lr = LogisticRegressionCV(solver='lbfgs', class_weight='balanced', max_iter=1500, n_jobs=8)
+svc = LinearSVC(class_weight='balanced', tol=1e-5, max_iter=10000)
+
+data = Data()
+X, y = data.process(train_path, winlen=0.08, winstep=0.005, numcep=32, nfilt=96, nfft=4096)
+
+print("Imported data " + str(len(X)) + " and " + str(len(y)))
+
+# testdata = Data()
+
+# testX, testy = testdata.process(test_path, winlen=0.08, winstep=0.005, numcep=32, nfilt=96, nfft=4096)
+
+# trainAndCrossValidate(classifier=svc, train_X=X, train_y=y)
+trainAndAttackRaw(classifier=mlp, train_X=X, train_y=y, audioPath=attack_audio_path)
+# trainAndAttack(classifier=lr, train_X=X, train_y=y, test_X=testX, test_y=testy)
+# trainAndAttack(classifier=mlp, train_X=X, train_y=y, test_X=testX, test_y=testy)
+# for size in [10, 20, 30, 50, 70, 90]:
+#     newX, newY = getN(X, y, size)
+#     print(Counter(newY))
+#
+#     for classifier in classifiers:
+#         trainAndValidate(path=path, classifier=classifier, X=newX, y=newY)

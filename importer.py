@@ -1,14 +1,23 @@
 import json
 import soundfile as sf
-import utils
 
 
 class Importer:
 
     @staticmethod
     def load(wav_file_path):
-        wav_file = Importer.load_wav(wav_file_path)
-        json_file = Importer.load_json(wav_file_path)
+        wav_file, json_file = None, None
+
+        try:
+            wav_file = Importer.load_wav(wav_file_path)
+        except:
+            pass
+
+        try:
+            json_file = Importer.load_json(wav_file_path)
+        except:
+            pass
+
         return wav_file, json_file
 
     @staticmethod
