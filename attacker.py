@@ -26,8 +26,8 @@ class Attacker:
         guesses = model.predict(X)
         probabs, classes = None, None
         try:
-            probabs = model.predict_proba(X)
             classes = model.classes_
+            probabs = model.predict_proba(X)
         except AttributeError:
             print("Probabilities not available for this classifier")
 
@@ -69,8 +69,6 @@ class Attacker:
             print("Precision score: ", precision_score(y, guesses, average='weighted'))
             print("F1 score: ", f1_score(y, guesses, average='weighted'))
             print("Accuracy with dictionary: ", accuracy_score(y, normalized_guesses))
-            if classes:
-                print_confusion_matrix(y, guesses, np.array(classes).tolist())
             self.success_per_character(y, normalized_guesses)
 
     def success_per_character(self, y, guesses):
@@ -99,11 +97,4 @@ class Attacker:
                 if len(row) > 0:
                     if "'" not in row[0] and 3 < len(row[0]) < 10:
                         self.wordlist += row
-
-
-def print_confusion_matrix(y, predictions, classes):
-
-    classes[0] = 'space'
-    plot_confusion_matrix_from_data(y, predictions,fz=8, columns=classes)
-    plt.show()
 

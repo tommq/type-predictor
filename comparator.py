@@ -11,7 +11,7 @@ from attacker import Attacker
 from data import Data
 from model import Model
 
-train_path = '/home/tomas/Documents/School/Master-thesis/grabber/resources/a485-sync/fifth/'
+train_path = '/home/tomas/Documents/School/Master-thesis/grabber/resources/a485-sync/closet/'
 test_path = '/home/tomas/Documents/School/Master-thesis/grabber/resources/a485-sync/closet/selected/'
 attack_audio_path = '/home/tomas/Documents/School/Master-thesis/grabber/resources/a485-sync/closet/selected/18abea94.wav'
 
@@ -33,6 +33,8 @@ def trainAndAttack(classifier=None, train_X=None, train_y=None, test_X=None, tes
         predictions = model_creator.predict(test_X)
         accuracy = accuracy_score(test_y, predictions)
         print("Accuracy for " + str(classifier) + " : " + str(accuracy))
+        attacker = Attacker()
+        attacker.attack(X=test_X, y=test_y, model=model_creator)
     except Exception as e:
         print("Exception in train and attack: ", e, )
 
@@ -63,7 +65,7 @@ def trainAndAttackRaw(classifier=None, train_X=None, train_y=None, audioPath=Non
 #     trainAndValidate(path, winlen=winlen, winstep=winstep, numcep=numcep, nfilt=nfilt, nfft=nfft)
 
 
-mlp = MLPClassifier(activation='relu', alpha=1e-5, hidden_layer_sizes=(2048,), random_state=1, max_iter=1500)
+mlp = MLPClassifier(activation='relu', alpha=1e-5, hidden_layer_sizes=(2500,30), random_state=1, max_iter=3000)
 lr = LogisticRegressionCV(solver='lbfgs', class_weight='balanced', max_iter=1500, n_jobs=8)
 svc = LinearSVC(class_weight='balanced', tol=1e-5, max_iter=10000)
 
@@ -72,12 +74,14 @@ X, y = data.process(train_path, winlen=0.08, winstep=0.005, numcep=32, nfilt=96,
 
 print("Imported data " + str(len(X)) + " and " + str(len(y)))
 
-# testdata = Data()
+testdata = Data()
 
-# testX, testy = testdata.process(test_path, winlen=0.08, winstep=0.005, numcep=32, nfilt=96, nfft=4096)
+testX, testy = testdata.process(test_path, winlen=0.08, winstep=0.005, numcep=32, nfilt=96, nfft=4096)
 
 # trainAndCrossValidate(classifier=svc, train_X=X, train_y=y)
-trainAndAttackRaw(classifier=mlp, train_X=X, train_y=y, audioPath=attack_audio_path)
+# trainAndAttackRaw(classifier=mlp, train_X=X, train_y=y, audioPath=attack_audio_path)
+trainAndAttack(classifier=mlp, train_X=X, train_y=y, test_X=testX, test_y=testy)
+# trainAndAttack(classifier=svc, train_X=X, train_y=y, test_X=testX, test_y=testy)
 # trainAndAttack(classifier=lr, train_X=X, train_y=y, test_X=testX, test_y=testy)
 # trainAndAttack(classifier=mlp, train_X=X, train_y=y, test_X=testX, test_y=testy)
 # for size in [10, 20, 30, 50, 70, 90]:
