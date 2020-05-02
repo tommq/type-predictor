@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse
 from attacker import Attacker
 from data import Data
