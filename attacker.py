@@ -36,7 +36,7 @@ class Attacker:
         if y:
             self.success_per_character(y, guesses)
 
-            if probabs and classes:
+            if probabs is not None and classes is not None:
                 top5 = 0.0
                 for i, l in enumerate(y[:]):
                     class_prob = probabs[i]
